@@ -17,20 +17,21 @@ dipole.W = 0.5 * 1e-3;
 dipole.L = 15 * 1e-3;
 Nrho = 200;
 Nphi = 200;
-Nz = 201;
+Nz = 401;
 
 %% DEPENDENT PARAMETERS
 wave.wavelength = c / wave.f;
 wave.k0 = 2 * pi / wave.wavelength;
 
 %% CYLINDRICAL GRID
-rho = linspace(eps, 30 * 1e-3, Nrho);
+rho = linspace(0.2, 15, Nrho) * wave.wavelength / sqrt(dielectric.er);
 phi = linspace(0, 2 * pi, Nphi);
 cyl_grid = meshgrid_comb(rho, phi);
-z = linspace(0, dielectric.h, Nz);
+z = linspace(eps, dielectric.h + 2e-3, Nz);
 
 %% TE1 AND TM0 PROPAGATION CONSTANTS
-[krho_te, krho_tm] = find_krho(wave.k0, wave.k0 * linspace(1, sqrt(dielectric.er), 1001), ...
+krho_range = wave.k0 * linspace(1, sqrt(dielectric.er), 1001);
+[krho_te, krho_tm] = find_krho(wave.k0, krho_range, ...
         'GroundSlab', dielectric.h, dielectric.er);
 
 %% TM WAVE VECTOR COMPONENTS IN CARTESIAN
@@ -56,17 +57,57 @@ for z_idx = 1 : 1 : length(z)
         i_tm(z_idx), J, dielectric.er, cyl_grid, 'TM');
 end
 
+%% TOTAL ELECTRIC FIELD IN Z
+Etotal = sqrt(abs(E(:, :, 1, :)) .^ 2 + abs(E(:, :, 2, :)) .^ 2 ...
+    + abs(E(:, :, 3, :)) .^ 2);
+Etotal = squeeze(Etotal);
+
 %% PLOT
 figure('Position', [250 250 750 400]);
-plot(rho * 1e3, real(E(1, :, 1, ceil(Nz / 2))), 'LineWidth', 2.0, ...
+plot(rho * sqrt(dielectric.er) / wave.wavelength, ...
+    real(E(1, :, 1, ceil(Nz / 4))), 'LineWidth', 2.0, ...
     'DisplayName', '\Re\{E_{\rho}\}');
 hold on;
-plot(rho * 1e3, imag(E(1, :, 1, ceil(Nz / 2))), '--', 'LineWidth', 2.0, ...
+plot(rho * sqrt(dielectric.er) / wave.wavelength, ...
+    imag(E(1, :, 1, ceil(Nz / 4))), '--', 'LineWidth', 2.0, ...
     'DisplayName', '\Im\{E_{\rho}\}');
 grid on;
-xlabel('\rho / mm');
-ylabel('E_{\rho}');
-title(['E_{\rho} Real & Imaginary Parts @ \phi = ' ...
+xticks(0 : 3 : 15);
+ylim([-7 7] * 1e5);
+xlim([0.2 15]);
+legend show;
+legend('location', 'bestoutside');
+xlabel('\rho / \lambda_{d}');
+ylabel('E_{\rho}^{TM} / V/m');
+title(['TM E_{\rho} Real & Imaginary Parts @ \phi = ' ...
     num2str(phi(1) * 180 / pi) ' deg, and z = ' ...
-    num2str(round(z(ceil(Nz / 2)) * 1e3, 2)) ' mm']);
+    num2str(round(z(ceil(Nz / 4)) * 1e3, 2)) ' mm']);
 saveas(gcf, 'figures\real_and_imag_variation.fig');
+
+figure('Position', [250 250 750 400]);
+plot(z' * 1e3, squeeze(Etotal(1, end, :)), 'LineWidth', 2.0, ...
+    'DisplayName', 'E_{total}');
+hold on;
+xline(dielectric.h * 1e3, '--', 'Color', [0.9290 0.6940 0.1250], ...
+    'LineWidth', 2.0, 'DisplayName', 'interface');
+grid on;
+legend show;
+legend('location', 'bestoutside');
+xlabel('z / mm');
+ylabel('|E_{total}^{TM}| / V/m');
+title(['TM |E_{total}| Amplitude @ \phi = ' ...
+    num2str(phi(1) * 180 / pi) ' deg, and \rho = 15\lambda_{d}']);
+saveas(gcf, 'figures\amplitude_z.fig');
+
+figure('Position', [250 250 750 400]);
+plot(phi' * 180 / pi, squeeze(Etotal(:, end, ceil(Nz / 4))), ...
+    'LineWidth', 2.0, 'DisplayName', 'E_{total}');
+grid on;
+xlim([0 360]);
+legend show;
+legend('location', 'bestoutside');
+xlabel('\phi / deg');
+ylabel('|E_{total}^{TM}| / V/m');
+title(['TM |E_{total}| Amplitude @ \rho = 15\lambda_{d}, and h = ' ...
+    num2str(round(z(ceil(Nz / 4)) * 1e3, 2)) ' mm']);
+saveas(gcf, 'figures\amplitude_phi.fig');
