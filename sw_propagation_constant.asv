@@ -31,26 +31,13 @@ for idx = length(wave.f) : -1 : 1
 end
 
 %% PLOT PROPAGATION CONSTANT
-wavelength_d = wave.wavelength / sqrt(dielectric.er);
 figure('Position', [250 250 750 400]);
-plot(dielectric.h ./ wavelength_d, krho_te ./ wave.k0, ...
-    'LineWidth', 2.0, 'DisplayName', 'TE1');
-hold on;
-plot(dielectric.h ./ wavelength_d, krho_tm ./ wave.k0, ...
-    'LineWidth', 2.0, 'DisplayName', 'TM0');
-grid on;
-xlim([min(dielectric.h ./ wavelength_d) max(dielectric.h ./ wavelength_d)]);
-legend show;
-legend('location', 'bestoutside');
-xlabel('h / \lambda_{d}');
-ylabel('k_{\rho}/k_{0}');
-title(['Normalized k_{\rho} @ h = ' num2str(dielectric.h * 1e3) ...
-    ' mm, and \epsilon_{r} = ' num2str(dielectric.er)]);
+plot(dielectric.h ./ wave.wavelength, );
 
-%% PLOT DENOMINATOR ZEROS
 [D_te, D_tm] = dispersion_eqn(wave.k0(end), krho_norm * wave.k0(end), ...
     'GroundSlab', dielectric.h, dielectric.er);
 
+%% PLOT DENOMINATOR ZEROS
 figure('Position', [250 250 750 400]);
 yyaxis left;
 plot(krho / wave.k0(end), abs(1 ./ D_te), 'LineWidth', 2.0, ...
