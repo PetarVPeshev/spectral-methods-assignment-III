@@ -45,3 +45,4 @@ xlabel('h / \lambda_{d}');
 ylabel('k_{\rho}/k_{0}');
 title(['Normalized k_{\rho} @ h = ' num2str(dielectric.h * 1e3) ...
     ' mm, and \epsilon_{r} = ' num2str(dielectric.er)]);
+saveas(gcf, 'figures\propagation_constant.fig');
