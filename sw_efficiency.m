@@ -133,39 +133,38 @@ eta_dipole = rad_power_dipole ./ (Psw_dipole + rad_power_dipole);
 eta_uniform = rad_power_uniform ./ (Psw_uniform + rad_power_uniform);
 
 %% PLOT
+wavelength_d = wave.wavelength / sqrt(dielectric.er);
 figure('Position', [250 250 750 400]);
-plot(wave.f * 1e-9, rad_power_elem ./ fs_power_elem, 'LineWidth', 2.0, ...
-    'DisplayName', 'radiated');
+plot(dielectric.h ./ wavelength_d, rad_power_elem ./ fs_power_elem, ...
+    'LineWidth', 2.0, 'DisplayName', 'radiated');
 hold on;
-plot(wave.f * 1e-9, Psw_elem ./ fs_power_elem, 'LineWidth', 2.0, ...
-    'DisplayName', 'surface wave')
+plot(dielectric.h ./ wavelength_d, Psw_elem ./ fs_power_elem, ...
+    'LineWidth', 2.0, 'DisplayName', 'surface wave')
 grid on;
-xticks(min(wave.f * 1e-9) : 2 : max(wave.f * 1e-9));
-xlim([min(wave.f * 1e-9) max(wave.f * 1e-9)]);
+xlim([min(dielectric.h ./ wavelength_d) max(dielectric.h ./ wavelength_d)]);
 legend show;
 legend('location', 'bestoutside');
-xlabel('f / GHz');
+xlabel('h / \lambda_{d}');
 ylabel('|P| / |P_{rad,FS}|');
 title(['Normalized P_{rad} & P_{SW} @ elementary current, h = ' ...
     num2str(dielectric.h * 1e3) ' mm, and \epsilon_{r} = ' ...
     num2str(dielectric.er)]);
-saveas(gcf, 'figures\rad_and_sw_elementary.fig');
+saveas(gcf, 'figures\power_sw_rad.fig');
 
 figure('Position', [250 250 750 400]);
-plot(wave.f * 1e-9, eta_elem * 100, 'LineWidth', 2.0, ...
-    'DisplayName', '\eta');
+plot(dielectric.h ./ wavelength_d, eta_elem * 100, 'LineWidth', 2.0, ...
+    'DisplayName', '\eta, elementary');
 hold on;
-plot(wave.f * 1e-9, eta_dipole * 100, 'LineWidth', 2.0, ...
+plot(dielectric.h ./ wavelength_d, eta_dipole * 100, 'LineWidth', 2.0, ...
     'DisplayName', '\eta, dipole');
 hold on;
-plot(wave.f * 1e-9, eta_uniform * 100, 'LineWidth', 2.0, ...
+plot(dielectric.h ./ wavelength_d, eta_uniform * 100, 'LineWidth', 2.0, ...
     'DisplayName', '\eta, uniform');
 grid on;
-xticks(min(wave.f * 1e-9) : 2 : max(wave.f * 1e-9));
-xlim([min(wave.f * 1e-9) max(wave.f * 1e-9)]);
+xlim([min(dielectric.h ./ wavelength_d) max(dielectric.h ./ wavelength_d)] );
 legend show;
 legend('location', 'bestoutside');
-xlabel('f / GHz');
+xlabel('h / \lambda_{d}');
 ylabel('\eta / %');
 title(['Efficiency @ h = ' num2str(dielectric.h * 1e3) ' mm, ' ...
     'and \epsilon_{r} = ' num2str(dielectric.er)]);
